@@ -2,8 +2,8 @@ import socket
 import threading
 
 REMOTE_HOST = '127.0.0.1'
-REMOTE_PORT_TUNNEL = 54321 
-SERVICE_HOST = '127.0.0.1' 
+REMOTE_PORT_TUNNEL = 54321
+SERVICE_HOST = '127.0.0.1'
 
 def handle_remote_connection(client_socket, client_address):
     print(f"Server de la distanță: Conexiune de la {client_address}")
@@ -15,10 +15,13 @@ def handle_remote_connection(client_socket, client_address):
             try:
                 destination_port_str, payload = data_received.split(':', 1)
                 destination_port = int(destination_port_str)
-                print(f"Server de la distanță: Forwarding către {SERVICE_HOST}:{destination_port} - {payload}")
+                print(f"Server de la distanță: Redirecționare către {SERVICE_HOST}:{destination_port} - {payload}")
                 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock_to_service:
                     sock_to_service.connect((SERVICE_HOST, destination_port))
                     sock_to_service.sendall(payload.encode('utf-8'))
+                    response = sock_to_service.recv(1024)
+                    client_socket.sendall(response)    
+
             except ValueError:
                 print(f"Server de la distanță: Format de date invalid primit: {data_received}")
             except ConnectionRefusedError:

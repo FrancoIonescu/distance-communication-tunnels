@@ -2,8 +2,8 @@ import socket
 import threading
 
 LOCAL_HOST = '127.0.0.1'
-LOCAL_PORT_TUNNEL = 12345  
-REMOTE_HOST = '127.0.0.1' 
+LOCAL_PORT_TUNNEL = 12345
+REMOTE_HOST = '127.0.0.1'
 REMOTE_PORT_TUNNEL = 54321
 
 def handle_client(client_socket, client_address):
@@ -13,12 +13,14 @@ def handle_client(client_socket, client_address):
             data = client_socket.recv(1024)
             if not data:
                 break
-            destination_port = 8080  
+            destination_port = 8080
             payload = f"{destination_port}:{data.decode()}".encode('utf-8')
-            print(f"Server local: Forwarding către {REMOTE_HOST}:{REMOTE_PORT_TUNNEL} - {payload.decode()}")
+            print(f"Server local: Redirecționare către {REMOTE_HOST}:{REMOTE_PORT_TUNNEL} - {payload.decode()}")
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock_to_remote:
                 sock_to_remote.connect((REMOTE_HOST, REMOTE_PORT_TUNNEL))
                 sock_to_remote.sendall(payload)
+                response = sock_to_remote.recv(1024)
+                client_socket.sendall(response)
     except ConnectionResetError:
         print(f"Conexiune resetată de clientul {client_address}")
     except Exception as e:

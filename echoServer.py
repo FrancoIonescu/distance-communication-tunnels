@@ -2,7 +2,7 @@ import socket
 import threading
 
 SERVICE_HOST = '127.0.0.1'
-SERVICE_PORT = 8080  
+SERVICE_PORT = 8080
 
 def handle_service(client_socket, client_address):
     print(f"Server de serviciu (Echo): Conexiune de la {client_address}")
