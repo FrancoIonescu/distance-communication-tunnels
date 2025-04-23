@@ -13,16 +13,18 @@ def handle_client(client_socket, client_address):
             data = client_socket.recv(1024)
             if not data:
                 break
-            destination_port = 8080
-            payload = f"{destination_port}:{data.decode()}".encode('utf-8')
-            print(f"Server local: Redirecționare către {REMOTE_HOST}:{REMOTE_PORT_TUNNEL} - {payload.decode()}")
+            print(f"Server local: Redirecționare către {REMOTE_HOST}:{REMOTE_PORT_TUNNEL} - {data.decode()}")
+
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock_to_remote:
                 sock_to_remote.connect((REMOTE_HOST, REMOTE_PORT_TUNNEL))
-                sock_to_remote.sendall(payload)
+                sock_to_remote.sendall(data)
                 response = sock_to_remote.recv(1024)
                 client_socket.sendall(response)
+
     except ConnectionResetError:
         print(f"Conexiune resetată de clientul {client_address}")
+    except socket.error as e:
+        print(f"Eroare socket în comunicarea cu clientul {client_address}: {e}")
     except Exception as e:
         print(f"Eroare în comunicarea cu clientul {client_address}: {e}")
     finally:
@@ -34,6 +36,7 @@ def start_local_tunnel_server():
         server_socket.bind((LOCAL_HOST, LOCAL_PORT_TUNNEL))
         server_socket.listen()
         print(f"Serverul de tunelare local ascultă pe {LOCAL_HOST}:{LOCAL_PORT_TUNNEL}")
+        
         while True:
             client_socket, client_address = server_socket.accept()
             client_thread = threading.Thread(target=handle_client, args=(client_socket, client_address))

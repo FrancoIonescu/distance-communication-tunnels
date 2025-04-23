@@ -4,30 +4,39 @@ import threading
 REMOTE_HOST = '127.0.0.1'
 REMOTE_PORT_TUNNEL = 54321
 SERVICE_HOST = '127.0.0.1'
+ECHO_PORT = 8080
+TIME_PORT = 9090
 
 def handle_remote_connection(client_socket, client_address):
     print(f"Server de la distanță: Conexiune de la {client_address}")
     try:
         while True:
-            data_received = client_socket.recv(1024).decode('utf-8')
+            data_received = client_socket.recv(1024).decode('utf-8').strip()
             if not data_received:
                 break
+
+            if data_received.lower().startswith("timp"):
+                destination_port = TIME_PORT
+                print(f"Server de la distanță: Redirecționare către serviciul de timp ({SERVICE_HOST}:{destination_port}) - {data_received}")
+            else:
+                destination_port = ECHO_PORT
+                print(f"Server de la distanță: Redirecționare către serviciul echo ({SERVICE_HOST}:{destination_port}) - {data_received}")
+
             try:
-                destination_port_str, payload = data_received.split(':', 1)
-                destination_port = int(destination_port_str)
-                print(f"Server de la distanță: Redirecționare către {SERVICE_HOST}:{destination_port} - {payload}")
                 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock_to_service:
                     sock_to_service.connect((SERVICE_HOST, destination_port))
-                    sock_to_service.sendall(payload.encode('utf-8'))
+                    sock_to_service.sendall(data_received.encode('utf-8'))
                     response = sock_to_service.recv(1024)
-                    client_socket.sendall(response)    
+                    client_socket.sendall(response)
+            except socket.error as e:
+                print(f"Server de la distanță: Eroare de socket: {e}")
+            except Exception as e:
+                print(f"Server de la distanță: Eroare generală: {e}")
 
-            except ValueError:
-                print(f"Server de la distanță: Format de date invalid primit: {data_received}")
-            except ConnectionRefusedError:
-                print(f"Server de la distanță: Conexiune refuzată pe {SERVICE_HOST}:{destination_port}")
     except ConnectionResetError:
         print(f"Server de la distanță: Conexiune resetată de {client_address}")
+    except socket.error as e:
+        print(f"Server de la distanță: Eroare de rețea cu {client_address}: {e}")
     except Exception as e:
         print(f"Server de la distanță: Eroare în comunicare: {e}")
     finally:
