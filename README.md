@@ -49,22 +49,22 @@ python tunelLocalServer.py
 python echoServer.py
 ```
 
-### 3. Start the Time Server
+### 4. Start the Time Server
 
 ```bash
 python timeServer.py
 ```
 
-### 4. Run the Client
+### 5. Run the Client
 
 ```bash
 python client.py
 ```
 
-### 5. Run the Time Client
+### 6. Run the Time Client
 
 ```bash
-python client.py
+python timeClient.py
 ```
 
 You can now type messages into the client. Based on the message content, the system will automatically determine which remote service you're trying to access. This demonstrates how the client connects to the local tunneling server, which in turn forwards the request through the only accessible port to the remote tunneling server. The remote server then connects to the appropriate service (such as the echo server or time server) based on the message.
