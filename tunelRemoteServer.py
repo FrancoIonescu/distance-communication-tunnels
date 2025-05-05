@@ -11,32 +11,31 @@ def handle_remote_connection(client_socket, client_address):
     print(f"Server de la distanță: Conexiune de la {client_address}")
     try:
         while True:
-            data_received = client_socket.recv(1024).decode('utf-8').strip()
-            if not data_received:
+            data = client_socket.recv(1024).decode('utf-8')
+            if not data:
                 break
 
-            if data_received.lower().startswith("timp"):
-                destination_port = TIME_PORT
-                print(f"Server de la distanță: Redirecționare către serviciul de timp ({SERVICE_HOST}:{destination_port}) - {data_received}")
+            if ':' in data:
+                port_str, msg = data.split(':', 1)
+                try:
+                    destination_port = int(port_str)
+                except ValueError:
+                    destination_port = ECHO_PORT
+                    msg = data
             else:
                 destination_port = ECHO_PORT
-                print(f"Server de la distanță: Redirecționare către serviciul echo ({SERVICE_HOST}:{destination_port}) - {data_received}")
+                msg = data
 
+            print(f"Server de la distanță: Redirecționare către serviciul de la {SERVICE_HOST}:{destination_port} - {msg}")
             try:
-                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock_to_service:
-                    sock_to_service.connect((SERVICE_HOST, destination_port))
-                    sock_to_service.sendall(data_received.encode('utf-8'))
-                    response = sock_to_service.recv(1024)
+                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as svc_sock:
+                    svc_sock.connect((SERVICE_HOST, destination_port))
+                    svc_sock.sendall(msg.encode('utf-8'))
+                    response = svc_sock.recv(1024)
                     client_socket.sendall(response)
-            except socket.error as e:
-                print(f"Server de la distanță: Eroare de socket: {e}")
             except Exception as e:
-                print(f"Server de la distanță: Eroare generală: {e}")
+                print(f"Server de la distanță: Eroare conectare la serviciu: {e}")
 
-    except ConnectionResetError:
-        print(f"Server de la distanță: Conexiune resetată de {client_address}")
-    except socket.error as e:
-        print(f"Server de la distanță: Eroare de rețea cu {client_address}: {e}")
     except Exception as e:
         print(f"Server de la distanță: Eroare în comunicare: {e}")
     finally:
@@ -50,8 +49,7 @@ def start_remote_tunnel_server():
         print(f"Serverul de tunelare de la distanță ascultă pe {REMOTE_HOST}:{REMOTE_PORT_TUNNEL}")
         while True:
             client_socket, client_address = server_socket.accept()
-            client_thread = threading.Thread(target=handle_remote_connection, args=(client_socket, client_address))
-            client_thread.start()
+            threading.Thread(target=handle_remote_connection, args=(client_socket, client_address), daemon=True).start()
 
 if __name__ == "__main__":
     start_remote_tunnel_server()
