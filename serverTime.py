@@ -3,7 +3,7 @@ import threading
 import time
 from datetime import datetime
 
-SERVICE_HOST = '127.0.0.1'
+SERVICE_HOST = 'localhost'
 SERVICE_PORT = 9090  
 
 def send_time_to_client(client_socket, client_address):
@@ -13,8 +13,8 @@ def send_time_to_client(client_socket, client_address):
             current_time = datetime.now().strftime("%H:%M:%S")
             message = f"Timpul curent este: {current_time}"
             client_socket.sendall(message.encode('utf-8'))
-            print(f"Server de timp: Mesaj trimis către {client_address}: {message}")
-            time.sleep(5)
+            print(f"Server de timp: Mesaj trimis către {client_address}")
+            time.sleep(60)
     except ConnectionAbortedError:
         print(f"Server de timp: Conexiunea a fost închisă de clientul {client_address}")
     except socket.timeout:

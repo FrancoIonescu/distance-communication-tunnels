@@ -1,7 +1,7 @@
 import socket
 import threading
 
-SERVICE_HOST = '127.0.0.1'
+SERVICE_HOST = 'localhost'
 SERVICE_PORT = 10000
 
 clients = []

@@ -1,7 +1,7 @@
 import socket
 import threading
 
-LOCAL_TUNNEL_HOST = '127.0.0.1'
+LOCAL_TUNNEL_HOST = 'localhost'
 LOCAL_TUNNEL_PORT = 12345
 DESTINATION_PORT = 10000
 
@@ -11,7 +11,7 @@ def receive_messages(sock):
             data = sock.recv(1024)
             if not data:
                 break
-            print(data.decode('utf-8'))
+            print(f"\n📩 Mesaj primit: {data.decode('utf-8')}\n> Introduceti un mesaj: ", end="")
     except Exception as e:
         print(f"Eroare primire: {e}")
     finally:
@@ -21,14 +21,21 @@ def receive_messages(sock):
 def run_client_broadcast():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.connect((LOCAL_TUNNEL_HOST, LOCAL_TUNNEL_PORT))
-        print("Client Broadcast conectat. Tastează mesaje (scrie 'exit' pentru a ieși):")
+    
+        init_payload = f"{DESTINATION_PORT}:"
+        s.sendall(init_payload.encode('utf-8'))
+
+        print("=== Client Broadcast Chat ===")
+        print("Client Broadcast conectat.")
+        
         threading.Thread(target=receive_messages, args=(s,), daemon=True).start()
 
         while True:
-            msg = input()
+            msg = input("> Introduceti un mesaj: ")
             if msg.lower() == 'exit':
+                print("Client: Conexiune închisă.")
                 break
-            payload = f"{DESTINATION_PORT}:{msg}"
+            payload = f"{msg}"
             s.sendall(payload.encode('utf-8'))
 
 if __name__ == "__main__":
