@@ -11,7 +11,7 @@ def receive_messages(sock):
             data = sock.recv(1024)
             if not data:
                 break
-            print(f"\n📩 Mesaj primit: {data.decode('utf-8')}\n> Introduceti un mesaj: ", end="")
+            print(f"\n Mesaj primit: {data.decode('utf-8')}\n> Introduceti un mesaj: ", end="")
     except Exception as e:
         print(f"Eroare primire: {e}")
     finally:
